@@ -31,7 +31,7 @@ Redmine::Plugin.register :git_pull_requests do
               'and are closed when the branch is merged.'
   version plugin_version
   url 'https://github.com/cthart/git_pull_requests'
-  requires_redmine version_or_higher: '7.0.0'
+  requires_redmine version_or_higher: '6.0.0'
 end
 
 # init.rb runs again at each code reload in development: prepend only once
