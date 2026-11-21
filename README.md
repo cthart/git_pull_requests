@@ -28,14 +28,20 @@ The plugin adds two things:
   aren't on the target (`git log target..branch`, each linked to its
   revision), and a link "View differences" to Redmine's own repository diff
   from the merge base to the branch (what `git diff target...branch`
-  shows). Once merged, it shows what the merge brought in. The diff itself
-  isn't on the issue page, which stays fast and keeps to the description,
-  the commits and the discussion; the link needs the "Browse repository"
-  permission.
+  shows). The diff itself isn't on the issue page, which stays fast and
+  keeps to the description, the commits and the discussion; the link needs
+  the "Browse repository" permission.
 * After Redmine has read new commits from the repository, every open pull
   request whose branch has been merged into its target gets the "Merged"
   status and a note "Merged into \<target branch\> in \<merge commit\>",
-  as the user of the merge commit.
+  as the user of the merge commit. The merge commit is also linked to the
+  issue, under Redmine's own "Associated revisions".
+
+A closed pull request with a linked merge commit keeps its Changes section
+from that commit alone: the branch tip it merged and the target just before
+the merge. So it still shows exactly what was merged after the source
+branch has been deleted, and doesn't change when either branch moves on.
+Reopened, a pull request is compared with its branches as they are again.
 
 Merging stays in git, done by a maintainer as before; Redmine only reads the
 repository.
@@ -48,7 +54,9 @@ git push
 
 It has no database tables, settings, translations or assets: everything a
 pull request has is stored in Redmine's own issues, custom values and
-journals. Uninstalled, pull requests stay ordinary issues.
+journals, and the merge commit's link in Redmine's own table of
+associated revisions. Uninstalled, pull requests stay ordinary issues, with
+their merge commit under Associated revisions.
 
 ## Limits
 
@@ -56,9 +64,10 @@ journals. Uninstalled, pull requests stay ordinary issues.
   trace a branch without commits of its own wouldn't also have, so such a
   pull request isn't noticed: close it by hand. Use `git merge --no-ff` (or
   `git config merge.ff false`).
-* The branch must still exist when Redmine reads the merge, so delete
-  branches only after that (not `git push origin main :feature/discounts` in
-  one go), or fetch right after each push (see below).
+* The source branch must still exist when Redmine reads the merge, so
+  delete it only after that (not `git push origin main :feature/discounts`
+  in one go), or fetch right after each push (see below). Once the pull
+  request is Merged, the branch can go.
 * No comments on lines of the diff: write them as notes ("shop.py line 42").
 * The plugin's own texts are in English only.
 

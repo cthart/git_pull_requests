@@ -58,6 +58,9 @@ module GitPullRequests
     # Why the changes can't be shown, or nil
     def problem
       return 'This project has no git repository.' unless repository
+      # Merged: everything comes from the merge commit, the branches may be gone
+      return nil if recorded_merge && tip
+
       return 'No source branch given.' if branch.blank?
       return 'No target branch given.' if target.blank?
       invalid = {'source branch' => branch, 'target branch' => target}.reject {|_, name| BRANCH_NAME.match?(name)}
@@ -69,12 +72,17 @@ module GitPullRequests
       nil
     end
 
+    # The commit the source branch is at, or, once merged, was at when merged
     def tip
-      @tip ||= rev_parse(branch)
+      return @tip if defined?(@tip)
+
+      @tip = recorded_merge ? rev_parse("#{recorded_merge}^2") : rev_parse("refs/heads/#{branch}")
     end
 
     def target_tip
-      @target_tip ||= rev_parse(target)
+      return @target_tip if defined?(@target_tip)
+
+      @target_tip = rev_parse("refs/heads/#{target}")
     end
 
     # What the branch is compared with: the target as it is, or, once the
@@ -100,14 +108,28 @@ module GitPullRequests
       @merge_base ||= git('merge-base', base, tip).strip
     end
 
-    # The merge commit that brought the branch into the target, or nil.
+    # The merge commit that brought the branch into the target, or nil: the
+    # one linked to the issue when it was set to Merged, else found in git.
     # Only a merge counts: a branch without commits of its own (or merged by
     # fast-forward) is on the target's first-parent line already and isn't
     # reported as merged.
     def merge_commit
       return @merge_commit if defined?(@merge_commit)
 
-      @merge_commit = find_merge_commit
+      @merge_commit = recorded_merge || find_merge_commit
+    end
+
+    # The merge commit linked to the issue as an associated revision (by
+    # RepositoryGitPatch, when it set the status to Merged), or nil: the
+    # newest of the issue's revisions in this repository with two parents.
+    # Only while the issue is closed: a reopened pull request is open again
+    # for new commits, and is compared with its target as it is.
+    def recorded_merge
+      return @recorded_merge if defined?(@recorded_merge)
+      return @recorded_merge = nil unless issue.closed?
+
+      @recorded_merge = issue.changesets.select {|c| c.repository_id == repository&.id}.reverse
+                             .map(&:revision).detect {|sha| rev_parse("#{sha}^2")}
     end
 
     private
@@ -125,8 +147,9 @@ module GitPullRequests
       issue.custom_field_values.detect {|v| v.custom_field.name == name}&.value.to_s.strip
     end
 
-    def rev_parse(name)
-      out = git('rev-parse', '--verify', '--quiet', "refs/heads/#{name}^{commit}")
+    # The commit a revision names, or nil
+    def rev_parse(rev)
+      out = git('rev-parse', '--verify', '--quiet', "#{rev}^{commit}")
       out.strip.presence
     rescue CommandFailed
       nil

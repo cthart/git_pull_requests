@@ -27,7 +27,12 @@ module GitPullRequests
         pr.issue.init_journal(changeset&.user || User.anonymous,
                               merged_note(repository, pr.target, sha))
         pr.issue.status = status
-        unless pr.issue.save
+        if pr.issue.save
+          # Redmine's own link from the issue to the merge commit ("Associated
+          # revisions"): the Changes section is then computed from the merge
+          # commit, so the branches can be deleted
+          changeset.issues << pr.issue if changeset && !changeset.issues.include?(pr.issue)
+        else
           Rails.logger.error("git_pull_requests: ##{pr.issue.id} not set to merged: " +
                              pr.issue.errors.full_messages.join(', '))
         end
