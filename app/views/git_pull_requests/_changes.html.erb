@@ -15,7 +15,13 @@
     <p class="nodata"><%= pr.branch %> has no commits that aren't on <%= pr.target %>.</p>
   <% else %>
     <p><%= pluralize(commits.size, 'commit') %>
-       <% if (stat = pr.shortstat).present? %>&middot; <%= stat %><% end %></p>
+    <% if User.current.allowed_to?(:browse_repository, pr.repository.project) %>
+      &middot; <%= link_to 'View the diff',
+                           {controller: 'repositories', action: 'diff', id: pr.repository.project,
+                            repository_id: pr.repository.identifier_param,
+                            rev: pr.tip, rev_to: pr.merge_base} %>
+    <% end %>
+    </p>
     <table class="list">
       <% commits.each do |c| %>
         <tr>
@@ -29,9 +35,6 @@
     <% if commits.size >= GitPullRequests::PullRequest::MAX_COMMITS %>
       <p class="nodata">Only the newest <%= commits.size %> commits are listed.</p>
     <% end %>
-
-    <%= render partial: 'common/diff',
-               locals: {diff: pr.diff, diff_type: 'inline', diff_style: 'Git'} %>
   <% end %>
 <% end %>
 </div>

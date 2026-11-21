@@ -93,14 +93,10 @@ module GitPullRequests
       end
     end
 
-    # "4 files changed, 120 insertions(+), 35 deletions(-)" against the merge base
-    def shortstat
-      git('diff', '--shortstat', "#{base}...#{tip}").strip
-    end
-
-    # The diff against the merge base (what merging would bring in), as lines
-    def diff
-      git('diff', '--no-color', '--no-ext-diff', "#{base}...#{tip}").lines
+    # Where the branch forked from the base: the diff from here to the tip is
+    # what merging brings in (git diff base...tip)
+    def merge_base
+      @merge_base ||= git('merge-base', base, tip).strip
     end
 
     # The merge commit that brought the branch into the target, or nil.

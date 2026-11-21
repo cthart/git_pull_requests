@@ -25,9 +25,13 @@ own.
 The plugin adds two things:
 
 * A **Changes** section under the description: the branch's commits that
-  aren't on the target (linked to their revisions), a diffstat and the diff
-  from the merge base (`git log target..branch`, `git diff target...branch`).
-  Once merged, it shows what the merge brought in.
+  aren't on the target (`git log target..branch`, each linked to its
+  revision), and a link "View the diff" to Redmine's own repository diff
+  from the merge base to the branch (what `git diff target...branch`
+  shows). Once merged, it shows what the merge brought in. The diff itself
+  isn't on the issue page, which stays fast and keeps to the description,
+  the commits and the discussion; the link needs the "Browse repository"
+  permission.
 * After Redmine has read new commits from the repository, every open pull
   request whose branch has been merged into its target gets the "Merged"
   status and a note "Merged into \<target branch\> in \<merge commit\>",
@@ -62,8 +66,11 @@ journals. Uninstalled, pull requests stay ordinary issues.
 
 1. Clone or copy this repository to `plugins/git_pull_requests` in your
    Redmine and restart Redmine. There are no migrations.
-2. Administration › Trackers: new tracker "Pull request" (for the projects
-   that use it; copy the workflow from Feature).
+2. Administration › Trackers: new tracker "Pull request", copying the
+   workflow from Feature. Tick the projects that use it in the tracker's
+   Projects list (a new tracker has none, and only appears in the
+   new-issue form of the projects ticked there): the project with the git
+   repository and its subprojects.
 3. Administration › Issue statuses: new status "Merged", closed.
    Add it to the Pull request tracker's workflow.
 4. Administration › Custom fields › Issues: "Branch" (text, required) and
