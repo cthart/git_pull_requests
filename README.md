@@ -26,7 +26,7 @@ The plugin adds two things:
 
 * A **Changes** section under the description: the branch's commits that
   aren't on the target (`git log target..branch`, each linked to its
-  revision), and a link "View the diff" to Redmine's own repository diff
+  revision), and a link "View differences" to Redmine's own repository diff
   from the merge base to the branch (what `git diff target...branch`
   shows). Once merged, it shows what the merge brought in. The diff itself
   isn't on the issue page, which stays fast and keeps to the description,
@@ -60,7 +60,7 @@ journals. Uninstalled, pull requests stay ordinary issues.
   branches only after that (not `git push origin main :feature/discounts` in
   one go), or fetch right after each push (see below).
 * No comments on lines of the diff: write them as notes ("shop.py line 42").
-* The texts are in English only.
+* The plugin's own texts are in English only.
 
 ## Installing
 

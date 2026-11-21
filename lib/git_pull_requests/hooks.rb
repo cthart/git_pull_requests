@@ -18,11 +18,18 @@ module GitPullRequests
     rescue StandardError => e
       # A broken plugin (e.g. after a Redmine upgrade) mustn't break the issue page
       Rails.logger.error("git_pull_requests: ##{issue&.id}: #{e.class}: #{e.message}")
-      FAILED
+      failed
     end
 
-    FAILED = '<hr><div class="pull-request-changes"><p><strong>Changes</strong></p>' \
-             '<p class="nodata">Something went wrong in the git_pull_requests plugin: ' \
-             'the changes can\'t be shown. Details are in the Redmine log.</p></div>'.html_safe
+    private
+
+    def failed
+      tag.hr +
+        tag.div(class: 'pull-request-changes') do
+          tag.p(tag.strong(l(:label_change_plural))) +
+            tag.p('Something went wrong in the git_pull_requests plugin: the changes ' \
+                  "can't be shown. Details are in the Redmine log.", class: 'nodata')
+        end
+    end
   end
 end
