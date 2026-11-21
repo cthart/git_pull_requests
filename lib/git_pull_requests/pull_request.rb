@@ -104,6 +104,12 @@ module GitPullRequests
       end
     end
 
+    # How many commits the branch has that aren't on the base: the list stops
+    # at MAX_COMMITS
+    def commit_count
+      @commit_count ||= git('rev-list', '--count', "#{base}..#{source_tip}").to_i
+    end
+
     # Where the branch forked from the base: the diff from here to source_tip
     # is what merging brings in (git diff base...source_tip)
     def merge_base

@@ -6,7 +6,7 @@
 <% if commits.any? %>
   <%# On the right of the heading, like the links of Subtasks and Related issues %>
   <div class="contextual">
-    <%= pluralize(commits.size, 'commit') %>
+    <%= pluralize(pr.commit_count, 'commit') %>
     <% if User.current.allowed_to?(:browse_repository, pr.repository.project) %>
       &middot; <%= link_to l(:label_view_diff),
                            {controller: 'repositories', action: 'diff', id: pr.repository.project,
@@ -32,8 +32,8 @@
       </tr>
     <% end %>
   </table>
-  <% if commits.size >= GitPullRequests::PullRequest::MAX_COMMITS %>
-    <p class="nodata">Only the newest <%= commits.size %> commits are listed.</p>
+  <% if commits.size < pr.commit_count %>
+    <p class="nodata">Only the newest <%= commits.size %> of <%= pr.commit_count %> commits are listed.</p>
   <% end %>
 <% end %>
 </div>

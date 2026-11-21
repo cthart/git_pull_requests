@@ -72,6 +72,11 @@ their merge commit under Associated revisions.
   delete it only after that (not `git push origin main :feature/discounts`
   in one go), or fetch right after each push (see below). Once the pull
   request is Merged, the branch can go.
+* The Changes section lists the newest 250 commits (`MAX_COMMITS`); the
+  count and "View differences" cover them all. Redmine's diff page shows
+  at most 1500 lines ("Maximum number of diff lines displayed" in
+  Administration › Settings › Files); "Unified diff" at the bottom
+  downloads the whole diff.
 * No comments on lines of the diff: write them as notes ("shop.py line 42").
 * The plugin's own texts are in English only.
 
