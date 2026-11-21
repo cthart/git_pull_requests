@@ -38,5 +38,8 @@ end
 unless Repository::Git <= GitPullRequests::RepositoryGitPatch
   Repository::Git.prepend GitPullRequests::RepositoryGitPatch
 end
+unless Redmine::FieldFormat::StringFormat <= GitPullRequests::BranchLinks
+  Redmine::FieldFormat::StringFormat.prepend GitPullRequests::BranchLinks
+end
 # Loading the class registers the view hook (Redmine::Hook::Listener.inherited)
 GitPullRequests::Hooks.instance

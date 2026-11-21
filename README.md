@@ -22,7 +22,7 @@ branch (such as `main`). Link it to the Bug or Feature it resolves with
 Comments, watchers, the assignee as reviewer, statuses, mails and lists are
 Redmine's own.
 
-The plugin adds two things:
+The plugin adds three things:
 
 * A **Changes** section under the description: the branch's commits that
   aren't on the target (`git log target..branch`, each linked to its
@@ -36,6 +36,10 @@ The plugin adds two things:
   status and a note "Merged into \<target branch\> in \<merge commit\>",
   as the user of the merge commit. The merge commit is also linked to the
   issue, under Redmine's own "Associated revisions".
+* On the issue page, the Source branch and Target branch values link to the
+  branch in Redmine's repository browser. While the pull request is open, a
+  branch that doesn't exist (a typo, or not pushed yet) is shown in red,
+  without a link; after the merge, a deleted branch is just its name.
 
 A closed pull request with a linked merge commit keeps its Changes section
 from that commit alone: the branch tip it merged and the target just before

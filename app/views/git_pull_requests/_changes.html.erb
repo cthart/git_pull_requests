@@ -11,7 +11,7 @@
       &middot; <%= link_to l(:label_view_diff),
                            {controller: 'repositories', action: 'diff', id: pr.repository.project,
                             repository_id: pr.repository.identifier_param,
-                            rev: pr.tip, rev_to: pr.merge_base} %>
+                            rev: pr.source_tip, rev_to: pr.merge_base} %>
     <% end %>
   </div>
 <% end %>
@@ -20,7 +20,7 @@
 <% if problem %>
   <p class="nodata"><%= problem %></p>
 <% elsif commits.empty? %>
-  <p class="nodata"><%= pr.branch %> has no commits that aren't on <%= pr.target %>.</p>
+  <p class="nodata"><%= pr.source %> has no commits that aren't on <%= pr.target %>.</p>
 <% else %>
   <table class="list">
     <% commits.each do |c| %>

@@ -8,8 +8,8 @@ require 'open3'
 
 module GitPullRequests
   # A pull request: an issue of the "Pull request" tracker whose custom fields
-  # name a branch and a target branch in a git repository Redmine reads.
-  # Only reads the repository, with git itself.
+  # name a source branch and a target branch in a git repository Redmine
+  # reads. Only reads the repository, with git itself.
   class PullRequest
     # The Redmine objects the plugin uses, by name: renaming one in Redmine
     # needs the same change here
@@ -23,7 +23,7 @@ module GitPullRequests
     BRANCH_NAME = %r{\A(?!-)(?!.*\.\.)[A-Za-z0-9._/-]+\z}
     MAX_COMMITS = 250
 
-    attr_reader :issue, :repository, :branch, :target
+    attr_reader :issue, :repository, :source, :target
 
     def self.pull_request?(issue)
       issue.tracker&.name == TRACKER
@@ -51,7 +51,7 @@ module GitPullRequests
     def initialize(issue)
       @issue = issue
       @repository = self.class.repository_for(issue.project)
-      @branch = field_value(SOURCE_FIELD)
+      @source = field_value(SOURCE_FIELD)
       @target = field_value(TARGET_FIELD)
     end
 
@@ -59,24 +59,26 @@ module GitPullRequests
     def problem
       return 'This project has no git repository.' unless repository
       # Merged: everything comes from the merge commit, the branches may be gone
-      return nil if recorded_merge && tip
+      return nil if recorded_merge && source_tip
 
-      return 'No source branch given.' if branch.blank?
+      return 'No source branch given.' if source.blank?
       return 'No target branch given.' if target.blank?
-      invalid = {'source branch' => branch, 'target branch' => target}.reject {|_, name| BRANCH_NAME.match?(name)}
+      invalid = {'source branch' => source, 'target branch' => target}.reject {|_, name| BRANCH_NAME.match?(name)}
       return invalid.map {|field, name| "Invalid #{field} name: #{name}."}.join(' ') if invalid.any?
-      return 'Source branch and target branch are the same.' if branch == target
-      return "Source branch #{branch} doesn't exist (any more)." unless tip
-      return "Target branch #{target} doesn't exist." unless target_tip
+      return 'Source branch and target branch are the same.' if source == target
+      missing = []
+      missing << "Source branch #{source} doesn't exist." unless source_tip
+      missing << "Target branch #{target} doesn't exist." unless target_tip
+      return missing.join(' ') if missing.any?
 
       nil
     end
 
     # The commit the source branch is at, or, once merged, was at when merged
-    def tip
-      return @tip if defined?(@tip)
+    def source_tip
+      return @source_tip if defined?(@source_tip)
 
-      @tip = recorded_merge ? rev_parse("#{recorded_merge}^2") : rev_parse("refs/heads/#{branch}")
+      @source_tip = recorded_merge ? rev_parse("#{recorded_merge}^2") : rev_parse("refs/heads/#{source}")
     end
 
     def target_tip
@@ -96,16 +98,20 @@ module GitPullRequests
     # [{id:, author:, date:, subject:}]
     def commits
       @commits ||= git('log', "--max-count=#{MAX_COMMITS}", '--format=%H%x00%an%x00%as%x00%s',
-                       "#{base}..#{tip}").lines.map do |line|
+                       "#{base}..#{source_tip}").lines.map do |line|
         id, author, date, subject = line.chomp.split("\0", 4)
         {id: id, author: author, date: date, subject: subject}
       end
     end
 
-    # Where the branch forked from the base: the diff from here to the tip is
-    # what merging brings in (git diff base...tip)
+    # Where the branch forked from the base: the diff from here to source_tip
+    # is what merging brings in (git diff base...source_tip)
     def merge_base
-      @merge_base ||= git('merge-base', base, tip).strip
+      @merge_base ||= git('merge-base', base, source_tip).strip
+    end
+
+    def branch_exists?(name)
+      rev_parse("refs/heads/#{name}").present?
     end
 
     # The merge commit that brought the branch into the target, or nil: the
@@ -136,10 +142,10 @@ module GitPullRequests
 
     def find_merge_commit
       return nil if problem
-      return nil unless git_ok?('merge-base', '--is-ancestor', tip, target_tip)
-      return nil if git('rev-list', '--first-parent', target_tip).lines.map(&:chomp).include?(tip)
+      return nil unless git_ok?('merge-base', '--is-ancestor', source_tip, target_tip)
+      return nil if git('rev-list', '--first-parent', target_tip).lines.map(&:chomp).include?(source_tip)
 
-      git('rev-list', '--first-parent', '--ancestry-path', '--reverse', "#{tip}..#{target_tip}")
+      git('rev-list', '--first-parent', '--ancestry-path', '--reverse', "#{source_tip}..#{target_tip}")
         .lines.first&.chomp
     end
 
