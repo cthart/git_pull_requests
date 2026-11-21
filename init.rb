@@ -7,7 +7,7 @@
 require 'open3'
 
 # A pull-request workflow on ordinary issues: an issue of the "Pull request"
-# tracker names a branch (and a target branch, default main); this lists the
+# tracker names a source branch and a target branch; this lists the source
 # branch's commits on the issue, with a link to the diff, and closes it as
 # merged once the branch has been merged into the target in git. See README.
 

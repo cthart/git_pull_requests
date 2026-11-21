@@ -36,7 +36,8 @@ module GitPullRequests
       Rails.logger.error("git_pull_requests: #{e.class}: #{e.message}")
     end
 
-    # "Merged into main in favoptic:commit:7f8e9d0" (a link in Redmine's markup)
+    # "Merged into <target> in <project>:commit:<sha>" (a link in Redmine's
+    # markup)
     def self.merged_note(repository, target, sha)
       repo = repository.identifier.present? ? "#{repository.identifier}|" : ''
       "Merged into #{target} in #{repository.project.identifier}:commit:#{repo}#{sha[0, 10]}"

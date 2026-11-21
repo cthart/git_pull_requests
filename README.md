@@ -16,11 +16,11 @@ repositories only. See the GitHub releases for versions.
 ## What it does
 
 A pull request is an issue of a "Pull request" tracker, next to Feature and
-Bug, with two custom fields: the branch to merge and the target branch
-(default `main`). Link it to the Bug or Feature it resolves with "blocks":
-that one can then only be closed once the pull request is closed. Comments,
-watchers, the assignee as reviewer, statuses, mails and lists are Redmine's
-own.
+Bug, with two custom fields: the source branch to merge and the target
+branch (such as `main`). Link it to the Bug or Feature it resolves with
+"blocks": that one can then only be closed once the pull request is closed.
+Comments, watchers, the assignee as reviewer, statuses, mails and lists are
+Redmine's own.
 
 The plugin adds two things:
 
@@ -73,9 +73,10 @@ journals. Uninstalled, pull requests stay ordinary issues.
    repository and its subprojects.
 3. Administration › Issue statuses: new status "Merged", closed.
    Add it to the Pull request tracker's workflow.
-4. Administration › Custom fields › Issues: "Branch" (text, required) and
-   "Target branch" (text, default value `main`), for the Pull request
-   tracker.
+4. Administration › Custom fields › Issues: "Source branch" and "Target
+   branch", both text and required, for the Pull request tracker. Give
+   Target branch the default value your pull requests usually go into, such
+   as `main` or `master`.
 
 The plugin finds these by name (constants in
 `lib/git_pull_requests/pull_request.rb`): rename one in Redmine and change it

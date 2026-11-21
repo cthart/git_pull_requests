@@ -14,7 +14,7 @@ module GitPullRequests
     # The Redmine objects the plugin uses, by name: renaming one in Redmine
     # needs the same change here
     TRACKER = 'Pull request'
-    BRANCH_FIELD = 'Branch'
+    SOURCE_FIELD = 'Source branch'
     TARGET_FIELD = 'Target branch'
     MERGED_STATUS = 'Merged'
 
@@ -51,18 +51,19 @@ module GitPullRequests
     def initialize(issue)
       @issue = issue
       @repository = self.class.repository_for(issue.project)
-      @branch = field_value(BRANCH_FIELD)
-      @target = field_value(TARGET_FIELD).presence || 'main'
+      @branch = field_value(SOURCE_FIELD)
+      @target = field_value(TARGET_FIELD)
     end
 
     # Why the changes can't be shown, or nil
     def problem
       return 'This project has no git repository.' unless repository
-      return 'No branch given.' if branch.blank?
-      invalid = {'branch' => branch, 'target branch' => target}.reject {|_, name| BRANCH_NAME.match?(name)}
+      return 'No source branch given.' if branch.blank?
+      return 'No target branch given.' if target.blank?
+      invalid = {'source branch' => branch, 'target branch' => target}.reject {|_, name| BRANCH_NAME.match?(name)}
       return invalid.map {|field, name| "Invalid #{field} name: #{name}."}.join(' ') if invalid.any?
-      return 'Branch and target branch are the same.' if branch == target
-      return "Branch #{branch} doesn't exist (any more)." unless tip
+      return 'Source branch and target branch are the same.' if branch == target
+      return "Source branch #{branch} doesn't exist (any more)." unless tip
       return "Target branch #{target} doesn't exist." unless target_tip
 
       nil
