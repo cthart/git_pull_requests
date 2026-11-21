@@ -1,0 +1,2 @@
+# git archive (and so GitHub release downloads) puts the tag into VERSION
+VERSION export-subst
